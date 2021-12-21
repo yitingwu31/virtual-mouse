@@ -7,7 +7,7 @@ frameWidth = 1280
 frameHeight = 720
 
 class scrollCalculator():
-    def __init__(self, xorg = 500, yorg = 500, threshold = 20, active=False):
+    def __init__(self, xorg = frameWidth//2, yorg = frameHeight//2, threshold = 20, active=False):
         self.xorg = xorg
         self.yorg = yorg
         self.threshold = threshold
@@ -49,16 +49,34 @@ class imageHandler():
         length = math.hypot(abs(x2 - x1), abs(y2 - y1))
         if self.distance is None:
             self.distance = length
+
+        # scale by multiplication
+        # scale = length / self.distance * 0.8
+        # newH, newW = int(self.h1 * scale), int(self.w1 * scale)
+        
+        # if (self.cy - newH//2) <= 0 or (self.cy + newH//2) >= frameHeight:
+        #     newH = self.cy * 2
+        #     newW = int(self.w1 * newH / self.h1)
+        #     print("set newH: ", newH)
+        # if (self.cx - newW//2) <= 0 or (self.cx + newW//2) >= frameWidth:
+        #     newW = self.cx * 2
+        #     newH = int(self.h1 * newW / self.w1)
+        #     print("set newW: ", newW)
+
+        # scale by addition
         scale = int((length - self.distance) // 2)
         newH, newW = self.h1 + scale, self.w1 + scale
         print("length: ", length, ", scale: ", scale, ", newH: ", newH)
 
         if (self.cy - newH//2) <= 0 or (self.cy + newH//2) >= frameHeight:
             newH = self.cy * 2
+            newW = self.w1 + newH - self.h1
         if (self.cx - newW//2) <= 0 or (self.cx + newH//2) >= frameWidth:
             newW = self.cx * 2
+            newH = self.h1 + newW - self.w1
 
         newimage = cv2.resize(self.img, (newH - newH % 2, newW - newW % 2))
+        print("newimage shape: ", newimage.shape)
         img[self.cy-newH//2 : self.cy+newH//2, self.cx-newW//2 : self.cx+newW//2] = newimage
         self.h = newH
         self.w = newW
@@ -73,6 +91,14 @@ class imageHandler():
             newcy = self.cy - self.speed
         elif direction == "Down":
             newcy = self.cy + self.speed
+
+        if (newcy - self.h//2) <= 0:
+            # newcy = self.h // 2
+            newcy = frameHeight - self.h//2
+        elif (newcy + self.h//2) >= frameHeight:
+            # newcy = frameHeight - self.h//2
+            newcy = self.h // 2
+
         img[newcy-self.h//2 : newcy+self.h//2, self.cx-self.w//2 : self.cx+self.w//2] = self.img
         self.cy = newcy
         return img
