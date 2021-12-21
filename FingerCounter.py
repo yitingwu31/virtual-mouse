@@ -165,7 +165,7 @@ def main():
     cap.set(4, frameHeight)  # height
     detector = htm.handDetector(detectionCon= 0.7)
 
-    image1 = cv2.imread('./CVZone/smallotter.png')
+    image1 = cv2.imread('smallotter.png')
 
     imghandler = imageHandler(image1)
 
