@@ -1,8 +1,10 @@
 # virtual-mouse
 
 ### Setup
-This project requires python 3.8 to run.
+This project requires ```python 3.8``` to run.
+
 If you do not have a python 3.8 installed, consider using ```pipenv``` to run python 3.8 in the virtual environment
+
 [installing pipenv & creating virtual environment](https://www.codingforentrepreneurs.com/blog/install-django-on-mac-or-linux/)
 ```
 pip install opencv-python
