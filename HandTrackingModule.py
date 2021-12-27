@@ -38,6 +38,47 @@ class handDetector():
                     cv2.circle(img, (cx, cy), 7, (255, 0, 255), cv2.FILLED)
         return lmlist
     
+    def findTwoHandPositions(self, img, draw = True):
+        lmlists = {'RIGHT': [], 'LEFT': []}
+        # print("multi_handedness: ", self.results.multi_handedness)
+        for hand_idx, hand_info in enumerate(self.results.multi_handedness):
+            hand_label = hand_info.classification[0].label
+            oneHand = self.results.multi_hand_landmarks[hand_idx]
+            for id, lm in enumerate(oneHand.landmark):
+                h, w, c = img.shape
+                cx, cy = int(lm.x * w), int(lm.y * h)
+                lmlists[hand_label.upper()].append([id, cx, cy])
+                if draw:
+                    cv2.circle(img, (cx, cy), 7, (255, 0, 255), cv2.FILLED)
+        return lmlists
+
+    
+    def fingersUp(self, img):
+        count = {'RIGHT': 0, 'LEFT': 0}
+
+        fingers_tips_ids = [self.mpHands.HandLandmark.INDEX_FINGER_TIP, self.mpHands.HandLandmark.MIDDLE_FINGER_TIP, self.mpHands.HandLandmark.RING_FINGER_TIP, self.mpHands.HandLandmark.PINKY_TIP]
+
+        finger_statuses = {'RIGHT_THUMB': False, 'RIGHT_INDEX': False, 'RIGHT_MIDDLE': False, 'RIGHT_RING': False, 'RIGHT_PINKY': False,
+                        'LEFT_THUMB': False, 'LEFT_INDEX': False, 'LEFT_MIDDLE': False, 'LEFT_RING': False, 'LEFT_PINKY': False}
+        
+        for hand_index, hand_info in enumerate(self.results.multi_handedness):
+        # print("hand_info: ", hand_info)
+            hand_label = hand_info.classification[0].label
+            hand_landmarks = self.results.multi_hand_landmarks[hand_index]
+            for tip_index in fingers_tips_ids:
+                finger_name = tip_index.name.split("_")[0]
+                if (hand_landmarks.landmark[tip_index].y < hand_landmarks.landmark[tip_index - 2].y):
+                    finger_statuses[hand_label.upper()+"_"+finger_name] = True
+                    count[hand_label.upper()] += 1
+
+            thumb_tip_x = hand_landmarks.landmark[self.mpHands.HandLandmark.THUMB_TIP].x
+            thumb_mcp_x = hand_landmarks.landmark[self.mpHands.HandLandmark.THUMB_TIP - 2].x
+
+            if (hand_label == 'Right' and (thumb_tip_x < thumb_mcp_x)) or (hand_label == 'Left' and (thumb_tip_x > thumb_mcp_x)):
+                finger_statuses[hand_label.upper() + "_THUMB"] = True
+                count[hand_label.upper()] += 1
+        
+        return count, finger_statuses
 
 
 def main():
